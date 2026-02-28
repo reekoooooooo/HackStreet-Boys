@@ -3,7 +3,7 @@
 
 ## Initial Plan:
 
-### ML(1-2 members): Use ** Open CV ** with Python because we have prior experience with it, 
+### ML(1-2 members): Use **Open CV** with Python because we have prior experience with it, 
 and because we can pre process images before OCR for increased accuracy. 
 #### -OCR:
 1. Finding Serial Number using text detection and extraction.
