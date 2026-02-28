@@ -1,0 +1,27 @@
+{
+  "pole_id": "P0010",
+  "gis": {
+    "pole_id": "P0010",
+    "expected_vegetation": "No",
+    "expected_guy_guard": "Yes",
+    "pole_type": "Steel",
+    "has_conduit_riser": "Yes",
+    "area": "Suburban"
+  },
+  "ai": {
+    "pole_id": "P0010",
+    "vegetation": "No",
+    "guy_guard": "Yes",
+    "pole_type": "Steel",
+    "has_conduit_riser": "Yes"
+  },
+  "mismatches": [],
+  "risk_score": 100,
+  "status": "OK",
+  "assessment": {
+    "risk_level": "SAFE",
+    "data_status": "VERIFIED",
+    "action": "No review required",
+    "confidence": "High"
+  }
+}
