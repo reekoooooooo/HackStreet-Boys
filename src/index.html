@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PolePad AI</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: #0f0f0f;
+        color: #e8e8e8;
+        font-family: "Courier New", monospace;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px 20px;
+      }
+
+      h1 {
+        font-size: 1.4rem;
+        letter-spacing: 0.2em;
+        color: #f5a623;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+      }
+
+      p.subtitle {
+        font-size: 0.75rem;
+        color: #555;
+        letter-spacing: 0.1em;
+        margin-bottom: 40px;
+      }
+
+      .upload-box {
+        width: 100%;
+        max-width: 480px;
+        border: 1px dashed #333;
+        padding: 40px;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color 0.2s;
+        margin-bottom: 24px;
+      }
+
+      .upload-box:hover {
+        border-color: #f5a623;
+      }
+
+      .upload-box input {
+        display: none;
+      }
+
+      .upload-box label {
+        cursor: pointer;
+        font-size: 0.8rem;
+        color: #555;
+        letter-spacing: 0.1em;
+      }
+
+      .upload-box label span {
+        display: block;
+        font-size: 2rem;
+        margin-bottom: 12px;
+      }
+
+      #preview {
+        width: 100%;
+        max-width: 480px;
+        margin-bottom: 24px;
+        display: none;
+      }
+
+      #preview img {
+        width: 100%;
+        border: 1px solid #222;
+      }
+
+      button {
+        background: #f5a623;
+        color: #0f0f0f;
+        border: none;
+        padding: 12px 32px;
+        font-family: "Courier New", monospace;
+        font-size: 0.85rem;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        cursor: pointer;
+        display: none;
+        margin-bottom: 32px;
+      }
+
+      button:hover {
+        background: #e09510;
+      }
+
+      #result {
+        width: 100%;
+        max-width: 480px;
+        display: none;
+      }
+
+      .result-box {
+        border: 1px solid #222;
+        padding: 24px;
+        margin-bottom: 16px;
+      }
+
+      .result-box .label {
+        font-size: 0.65rem;
+        letter-spacing: 0.2em;
+        color: #555;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+
+      .result-box .value {
+        font-size: 1.6rem;
+        letter-spacing: 0.1em;
+        color: #f5a623;
+      }
+
+      .status {
+        font-size: 0.75rem;
+        letter-spacing: 0.1em;
+        padding: 4px 0;
+        margin-top: 8px;
+      }
+
+      .status.high {
+        color: #4caf50;
+      }
+      .status.low {
+        color: #ff9800;
+      }
+      .status.fail {
+        color: #f44336;
+      }
+
+      .db-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.8rem;
+        margin-top: 8px;
+      }
+
+      .db-table td {
+        padding: 8px 0;
+        border-bottom: 1px solid #1a1a1a;
+      }
+
+      .db-table td:first-child {
+        color: #555;
+        width: 40%;
+      }
+      .db-table td:last-child {
+        color: #e8e8e8;
+      }
+
+      #loading {
+        display: none;
+        font-size: 0.75rem;
+        letter-spacing: 0.2em;
+        color: #555;
+        margin-bottom: 24px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>⚡ PolePad AI</h1>
+    <p class="subtitle">Pole Tag Detection & GIS Verification</p>
+
+    <div
+      class="upload-box"
+      onclick="document.getElementById('fileInput').click()"
+    >
+      <input
+        type="file"
+        id="fileInput"
+        accept="image/*"
+        onchange="handleFile(event)"
+      />
+      <label>
+        <span>📷</span>
+        Click to upload inspection photo
+      </label>
+    </div>
+
+    <div id="preview">
+      <img id="previewImg" src="" alt="Preview" />
+    </div>
+
+    <button id="runBtn" onclick="runDetection()">Run Tag Detection</button>
+
+    <div id="loading">Processing image...</div>
+
+    <div id="result">
+      <div class="result-box">
+        <div class="label">Detected Tag</div>
+        <div class="value" id="tagValue">—</div>
+        <div class="status" id="tagStatus"></div>
+      </div>
+      <div class="result-box" id="dbBox">
+        <div class="label">GIS Database</div>
+        <table class="db-table" id="dbTable"></table>
+      </div>
+    </div>
+
+    <script>
+      // Mock GIS database — replace with real data
+      const GIS_DATABASE = {
+        444194: {
+          type: "Wood Pole",
+          location: "123 Main St, Richmond VA",
+          status: "Active",
+        },
+        625296: {
+          type: "Wood Pole",
+          location: "456 Elm St, Richmond VA",
+          status: "Active",
+        },
+        PD41459: {
+          type: "Pad Mount",
+          location: "789 Oak Ave, Richmond VA",
+          status: "Active",
+        },
+        "D-8176": {
+          type: "Metal Pad",
+          location: "321 Pine Rd, Richmond VA",
+          status: "Active",
+        },
+      };
+
+      let selectedFile = null;
+
+      function handleFile(event) {
+        selectedFile = event.target.files[0];
+        if (!selectedFile) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          document.getElementById("previewImg").src = e.target.result;
+          document.getElementById("preview").style.display = "block";
+          document.getElementById("runBtn").style.display = "inline-block";
+          document.getElementById("result").style.display = "none";
+        };
+        reader.readAsDataURL(selectedFile);
+      }
+
+      async function runDetection() {
+        if (!selectedFile) return;
+
+        document.getElementById("loading").style.display = "block";
+        document.getElementById("runBtn").style.display = "none";
+        document.getElementById("result").style.display = "none";
+
+        const formData = new FormData();
+        formData.append("image", selectedFile);
+
+        try {
+          const response = await fetch("http://localhost:5000/detect", {
+            method: "POST",
+            body: formData,
+          });
+
+          const data = await response.json();
+          showResult(data);
+        } catch (err) {
+          showResult({ tag: null, confidence: "unreadable", error: true });
+        }
+
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("result").style.display = "block";
+        document.getElementById("runBtn").style.display = "inline-block";
+      }
+
+      function showResult(data) {
+        const tagEl = document.getElementById("tagValue");
+        const statusEl = document.getElementById("tagStatus");
+        const dbTable = document.getElementById("dbTable");
+
+        if (!data.tag) {
+          tagEl.textContent = "Not Found";
+          statusEl.textContent = "Could not read tag — flag for manual review";
+          statusEl.className = "status fail";
+          dbTable.innerHTML =
+            '<tr><td colspan="2" style="color:#f44336">No tag detected</td></tr>';
+          return;
+        }
+
+        tagEl.textContent = data.tag;
+
+        if (data.confidence === "high_confidence") {
+          statusEl.textContent = "✓ High confidence";
+          statusEl.className = "status high";
+        } else {
+          statusEl.textContent = "⚠ Low confidence — review recommended";
+          statusEl.className = "status low";
+        }
+
+        // Database lookup
+        const record = GIS_DATABASE[data.tag];
+        if (record) {
+          dbTable.innerHTML = `
+          <tr><td>Asset Tag</td><td>${data.tag}</td></tr>
+          <tr><td>Type</td><td>${record.type}</td></tr>
+          <tr><td>Location</td><td>${record.location}</td></tr>
+          <tr><td>Status</td><td>${record.status}</td></tr>
+          <tr><td>Match</td><td style="color:#4caf50">✓ Found in database</td></tr>
+        `;
+        } else {
+          dbTable.innerHTML = `
+          <tr><td>Asset Tag</td><td>${data.tag}</td></tr>
+          <tr><td>Match</td><td style="color:#f44336">✗ Not in database — flag for review</td></tr>
+        `;
+        }
+      }
+    </script>
+  </body>
+</html>

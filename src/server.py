@@ -1,30 +1,35 @@
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 import cv2
 import numpy as np
-import sys
 import easyocr
 import re
+
+app = Flask(__name__)
+CORS(app)
+
+# Load OCR once at startup
+print("Loading OCR model...")
+reader = easyocr.Reader(['en'], gpu=False)
+print("Ready.")
+
+# ── Copy your preprocess functions here ──────────────────────────────────────
 
 def preprocess_original(img):
     return img
 
 def preprocess_standard(img):
-    # Resize if too large
     h, w = img.shape[:2]
     if w > 1024 or h > 1024:
         scale = min(1024/w, 1024/h)
         img = cv2.resize(img, (int(w*scale), int(h*scale)))
-
-    # Enhance contrast
     lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
     l, a, b = cv2.split(lab)
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
     l = clahe.apply(l)
     img = cv2.cvtColor(cv2.merge((l, a, b)), cv2.COLOR_LAB2BGR)
-
-    # Sharpen
     blurred = cv2.GaussianBlur(img, (0, 0), 3)
     img = cv2.addWeighted(img, 1.5, blurred, -0.5, 0)
-
     return img
 
 def preprocess_threshold(img):
@@ -33,10 +38,9 @@ def preprocess_threshold(img):
     return cv2.threshold(upscaled, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
 
 def preprocess_inverted(img):
-    thresh = preprocess_threshold(img)
-    return cv2.bitwise_not(thresh)
+    return cv2.bitwise_not(preprocess_threshold(img))
 
-def try_all_preprocesses(img, reader):
+def try_all_preprocesses(img):
     candidates = []
     for version in [
         preprocess_original(img),
@@ -46,7 +50,6 @@ def try_all_preprocesses(img, reader):
     ]:
         results = reader.readtext(version)
         candidates.extend(results)
-
     candidates.sort(key=lambda x: x[2], reverse=True)
     return candidates
 
@@ -59,32 +62,24 @@ def extract_tag_number(ocr_results):
             return cleaned, "low_confidence"
     return None, "unreadable"
 
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python preprocess.py <image_path>")
-        sys.exit(1)
+# ── Route ─────────────────────────────────────────────────────────────────────
 
-    img = cv2.imread(sys.argv[1])
+@app.route('/detect', methods=['POST'])
+def detect():
+    if 'image' not in request.files:
+        return jsonify({"error": "No image uploaded"}), 400
+
+    file = request.files['image']
+    img_array = np.frombuffer(file.read(), np.uint8)
+    img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+
     if img is None:
-        print("ERROR: Could not load image.")
-        sys.exit(1)
+        return jsonify({"error": "Could not read image"}), 400
 
-    print("Loading OCR...")
-    reader = easyocr.Reader(['en'], gpu=False)
-
-    print("Running all preprocessing versions...")
-    results = try_all_preprocesses(img, reader)
-
-    print("\nAll detected text:")
-    for (_, text, conf) in results:
-        print(f"  '{text}' — {conf:.0%}")
-
+    results = try_all_preprocesses(img)
     tag, confidence = extract_tag_number(results)
 
-    print("\n--- Result ---")
-    if confidence == "high_confidence":
-        print(f"Tag: {tag} (HIGH confidence)")
-    elif confidence == "low_confidence":
-        print(f"Tag: {tag} (LOW confidence — flag for review)")
-    else:
-        print("Could not read tag — flag for manual review")
+    return jsonify({"tag": tag, "confidence": confidence})
+
+if __name__ == '__main__':
+    app.run(port=5000, debug=True)
