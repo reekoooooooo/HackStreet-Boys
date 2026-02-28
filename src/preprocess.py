@@ -27,6 +27,7 @@ if __name__ == "__main__":
         print("Usage: python preprocess.py <image_path>")
         sys.exit(1)
 
+    import os
     path = sys.argv[1]
     print(f"Loading image from: {path}")
 
@@ -37,5 +38,9 @@ if __name__ == "__main__":
 
     print("Image loaded successfully.")
     output = preprocess(img)
-    cv2.imwrite("processed_output.jpg", output)
-    print("Done. Saved as processed_output.jpg")
+
+    # Generate output filename based on input
+    base, ext = os.path.splitext(os.path.basename(path))
+    output_filename = f"{base}_processed{ext}"
+    cv2.imwrite(output_filename, output)
+    print(f"Done. Saved as {output_filename}")
