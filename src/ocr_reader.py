@@ -22,30 +22,17 @@ def main():
         print("ERROR: Could not load processed image. Make sure to run preprocess.py first.")
         sys.exit(1)
 
-    print("Running YOLO to detect text regions...")
-    img = cv2.imread(processed_path)
-    if img is None:
-        print("ERROR: Could not load processed image.")
-        sys.exit(1)
-
-    # Load YOLO model (using pretrained YOLOv8s for text detection)
-    yolo_model = YOLO('yolov8s.pt')
-    results = yolo_model(img)
-    print("Detected regions:", len(results[0].boxes))
-
+    print("Running EasyOCR on the full processed image...")
     reader = easyocr.Reader(['en'])
+    ocr_results = reader.readtext(img, allowlist='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
     found = False
-    for box in results[0].boxes:
-        x1, y1, x2, y2 = map(int, box.xyxy[0])
-        crop = img[y1:y2, x1:x2]
-        ocr_results = reader.readtext(crop, allowlist='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
-        for _, text, conf in ocr_results:
-            filtered = ''.join([c for c in text if c.isalnum()])
-            if filtered:
-                print(f"Detected: {filtered} (Confidence: {conf:.2f})")
-                found = True
+    for _, text, conf in ocr_results:
+        filtered = ''.join([c for c in text if c.isalnum()])
+        if filtered:
+            print(f"Detected: {filtered} (Confidence: {conf:.2f})")
+            found = True
     if not found:
-        print("No text/numbers detected in detected regions.")
+        print("No text/numbers detected in image.")
 
 if __name__ == "__main__":
     main()
