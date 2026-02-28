@@ -1,2 +1,5 @@
-pole_id,pole_id_confidence,pole_type,pole_type_confidence,has_safety_equipment,safety_equipment_confidence,vegetation_encroachment,vegetation_confidence,hardware_attachments,hardware_attachments_confidence,structural_anomalies,anomaly_confidence
-0444194,0.534366775897658,,0.0,False,0.0,False,0.0,,,False,0.0,EGC5|0444194|SCE,0.12|0.53|1.0
+pole_id,pole_type,vegetation_encroachment,from_ocr
+735033,wood,False,
+735033,wood,False,
+735033,wood,False,
+735033,wood,False,

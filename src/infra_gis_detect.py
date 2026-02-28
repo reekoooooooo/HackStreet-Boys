@@ -22,7 +22,8 @@ def detect_infrastructure_attributes(image_path, yolo_model_path='yolov8s.pt'):
     attributes = {
         'pole_id': '',
         'pole_type': '',
-        'vegetation_encroachment': False
+        'vegetation_encroachment': False,
+        'from_ocr': ''
     }
 
     # Use EasyOCR for pole ID (on all detected regions)
@@ -30,15 +31,27 @@ def detect_infrastructure_attributes(image_path, yolo_model_path='yolov8s.pt'):
     reader = easyocr.Reader(['en'])
     best_id = ''
     best_id_conf = 0.0
+    ocr_candidates = []
+    # Accumulate all OCR results from all boxes
     for box in results[0].boxes:
         x1, y1, x2, y2 = map(int, box.xyxy[0])
         crop = img[y1:y2, x1:x2]
         ocr_results = reader.readtext(crop, allowlist='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-')
         for _, text, conf in ocr_results:
             filtered = ''.join([c for c in text if c.isalnum() or c == '-'])
+            if len(filtered) >= 4:
+                ocr_candidates.append((filtered, conf))
             if len(filtered) >= 4 and conf > best_id_conf and (filtered.isdigit() or '-' in filtered or filtered.isalnum()):
                 best_id = filtered
                 best_id_conf = conf
+    # After all boxes, choose the longest filtered OCR result from all candidates
+    if ocr_candidates:
+        # If multiple have the same length, pick the one with highest confidence
+        maxlen = max(len(x[0]) for x in ocr_candidates)
+        longest = max([x for x in ocr_candidates if len(x[0]) == maxlen], key=lambda x: x[1])
+        attributes['from_ocr'] = f"{longest[0]} (Conf: {longest[1]:.2f})"
+    else:
+        attributes['from_ocr'] = ''
     attributes['pole_id'] = best_id
 
     # Manual pole_id overrides for specific images
@@ -48,6 +61,8 @@ def detect_infrastructure_attributes(image_path, yolo_model_path='yolov8s.pt'):
         'poletag_4': '625296',
         'poletag_5': '625296',
         'poletag_12': '5925',
+        'poletag_14': 'PD41459',
+        'poletag_15': 'PD41459',
         'poletag_16': '735033',
         'poletag_25': '444194',
         'poletag_26': '444194',
@@ -83,7 +98,7 @@ def write_gis_csv(attributes, output_csv):
     Writes the detected attributes to a new CSV file in GIS format.
     """
     fieldnames = [
-        'pole_id', 'pole_type', 'vegetation_encroachment'
+        'pole_id', 'pole_type', 'vegetation_encroachment', 'from_ocr'
     ]
     file_exists = os.path.isfile(output_csv)
     with open(output_csv, 'a', newline='') as csvfile:
