@@ -1,0 +1,24 @@
+{
+  "pole_id": "P0002",
+  "timestamp": "2026-02-28T13:16:18.261074",
+  "gis": {
+    "pole_id": "P0002",
+    "expected_vegetation": "Yes",
+    "expected_guy_guard": "Yes",
+    "pole_type": "Wood",
+    "has_conduit_riser": "No",
+    "area": "Rural"
+  },
+  "ai": {
+    "pole_id": "P0002",
+    "vegetation": "Yes",
+    "guy_guard": "No",
+    "pole_type": "Wood",
+    "has_conduit_riser": "No"
+  },
+  "mismatches": [
+    "Guy guard mismatch: GIS=Yes vs AI=No"
+  ],
+  "risk_score": 25,
+  "status": "HIGH RISK"
+}

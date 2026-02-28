@@ -1,0 +1,26 @@
+{
+  "pole_id": "P0003",
+  "timestamp": "2026-02-28T15:21:33.834827",
+  "gis": {
+    "pole_id": "P0003",
+    "expected_vegetation": "No",
+    "expected_guy_guard": "No",
+    "pole_type": "Steel",
+    "has_conduit_riser": "Yes",
+    "area": "Urban"
+  },
+  "ai": {
+    "pole_id": "P0003",
+    "vegetation": "Yes",
+    "guy_guard": "No",
+    "pole_type": "Wood",
+    "has_conduit_riser": "No"
+  },
+  "mismatches": [
+    "Vegetation mismatch: GIS=No vs AI=Yes",
+    "Pole type mismatch: GIS=Steel vs AI=Wood",
+    "Conduit riser mismatch: GIS=Yes vs AI=No"
+  ],
+  "risk_score": 0,
+  "status": "HIGH RISK"
+}
