@@ -1,0 +1,106 @@
+CORE STACK
+Computer Vision (Object Detection)
+ YOLOv8 (Ultralytics)
+Use for:
+Detect vegetation
+Detect guy guard
+
+
+Why?
+Free + open-source
+Pretrained models available
+Can run locally
+Fast to prototype
+Install:
+pip install ultralytics
+OCR (Read Asset Tag)
+
+  
+EasyOCR
+Use for:
+Reading pole tag numbers
+Why?
+Free
+Works offline
+No API keys
+Better for real-world text than Tesseract sometimes
+Install:
+pip install easyocr
+
+  
+Image Handling
+OpenCV
+Use for:
+Preprocessing images before OCR
+Cropping tag areas
+Resizing
+Converting to grayscale
+OCR accuracy goes up a lot with preprocessing.
+Install:
+pip install opencv-python
+
+  
+Data & Logic
+Pandas
+Use for:
+Loading GIS records
+Matching pole IDs
+pip install pandas
+
+  
+Prediction 
+XGBoost
+Use for:
+Predicting risk score
+Why?
+Free
+Fast
+Works with small data
+pip install xgboost
+
+  
+Dashboard
+Streamlit
+Use for:
+Upload image
+Show AI findings
+Show mismatches
+Show risk score
+Why Streamlit?
+Because:
+Python-based 
+Runs locally (no hosting needed)
+Install:
+pip install streamlit
+  
+
+Supporting Tools
+  
+NumPy
+Needed for:
+Image arrays
+Model inputs
+pip install numpy
+  
+Pillow
+Handles images for Streamlit
+pip install pillow
+
+Tool
+Purpose
+YOLOv8
+Detect vegetation / guy guard
+EasyOCR
+Read tag
+OpenCV
+Clean image
+Pandas
+Load GIS data
+NumPy
+Data processing
+XGBoost
+Risk prediction
+Streamlit
+UI
+
+
