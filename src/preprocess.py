@@ -39,8 +39,12 @@ if __name__ == "__main__":
     print("Image loaded successfully.")
     output = preprocess(img)
 
-    # Generate output filename based on input
+    # Generate output filename based on input and save to 'processed' folder
+    processed_dir = os.path.join(os.path.dirname(__file__), 'processed')
+    if not os.path.exists(processed_dir):
+        os.makedirs(processed_dir)
     base, ext = os.path.splitext(os.path.basename(path))
     output_filename = f"{base}_processed{ext}"
-    cv2.imwrite(output_filename, output)
-    print(f"Done. Saved as {output_filename}")
+    output_path = os.path.join(processed_dir, output_filename)
+    cv2.imwrite(output_path, output)
+    print(f"Done. Saved as {output_path}")
