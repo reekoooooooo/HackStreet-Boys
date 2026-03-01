@@ -57,15 +57,12 @@ def detect_infrastructure_attributes(image_path, yolo_model_path='yolov8s.pt'):
     # Manual pole_id overrides for specific images
     img_file = os.path.basename(image_path).lower()
     manual_ids = {
-        'poletag_3': '625296',
-        'poletag_4': '625296',
         'poletag_5': '625296',
         'poletag_12': '5925',
         'poletag_14': 'PD41459',
         'poletag_15': 'PD41459',
         'poletag_16': '735033',
-        'poletag_25': '444194',
-        'poletag_26': '444194',
+
     }
     for key, val in manual_ids.items():
         if key in img_file:
