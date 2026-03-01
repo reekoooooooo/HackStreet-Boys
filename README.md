@@ -8,7 +8,7 @@
 # PolePad AI: Crowd-Powered Infrastructure Verification
 
 ## Team: The HackStreet Boys
-**Members:** David Ringler, Tyreek Long, Pranav Kanumuri, Raymart Velesco, Alex Santiago
+**Members:** David Ringler, Tyrek Long, Pranav Kanumuri, Raymart Velesco, Alex Santiago
 
 ---
 
