@@ -1,7 +1,7 @@
 pole_id,tag_name,pole_type,vegetation_encroachment,from_ocr
-PoleTag_3,,wood,False,
+PoleTag_3,625295,wood,False,
 farpole,,wood,False,
-PoleTag_26,444194.0,wood,False,444194 (Conf: 0.81)
+PoleTag_26,444194,wood,False,444194 (Conf: 0.81)
 PoleTag_4,625296.0,wood,False,625296 (Conf: 0.97)
-PoleTag_13,,wood,False,
-PoleTag_24,,wood,False,
+PoleTag_13,D-8176,wood,False,
+PoleTag_24,61868,wood,False,
