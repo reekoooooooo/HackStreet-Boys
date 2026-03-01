@@ -1,10 +1,8 @@
 import os
 import cv2
-import easyocr
 import csv
-from ultralytics import YOLO
 
-def detect_infrastructure_attributes(image_path, yolo_model_path='yolov8s.pt'):
+def detect_infrastructure_attributes(image_path, yolo_model_path='yolov8s.pt', pole_id=None):
     """
     Detects infrastructure attributes from an image using YOLO and EasyOCR.
     Returns a dictionary with detected attributes.
@@ -14,20 +12,41 @@ def detect_infrastructure_attributes(image_path, yolo_model_path='yolov8s.pt'):
     if img is None:
         raise FileNotFoundError(f"Could not load image: {image_path}")
 
+    # Lazy-import heavy dependencies so module import doesn't fail when packages are absent
+    try:
+        from ultralytics import YOLO
+    except Exception as e:
+        raise ImportError(
+            "Missing dependency 'ultralytics'. Install it with `pip install ultralytics` "
+            "to enable YOLO-based detection. Original error: " + str(e)
+        )
+
+    try:
+        import easyocr
+    except Exception as e:
+        raise ImportError(
+            "Missing dependency 'easyocr'. Install it with `pip install easyocr` "
+            "to enable OCR on detected regions. Original error: " + str(e)
+        )
+
     # Load YOLO model
     yolo_model = YOLO(yolo_model_path)
     results = yolo_model(img)
 
+    # Use provided pole_id or extract from filename (without extension)
+    if pole_id is None:
+        pole_id = os.path.splitext(os.path.basename(image_path))[0]
+
     # Initialize attributes with more detail
     attributes = {
-        'pole_id': '',
+        'pole_id': pole_id,
+        'tag_name': '',
         'pole_type': '',
         'vegetation_encroachment': False,
         'from_ocr': ''
     }
 
     # Use EasyOCR for pole ID (on all detected regions)
-    import easyocr
     reader = easyocr.Reader(['en'])
     best_id = ''
     best_id_conf = 0.0
@@ -50,24 +69,10 @@ def detect_infrastructure_attributes(image_path, yolo_model_path='yolov8s.pt'):
         maxlen = max(len(x[0]) for x in ocr_candidates)
         longest = max([x for x in ocr_candidates if len(x[0]) == maxlen], key=lambda x: x[1])
         attributes['from_ocr'] = f"{longest[0]} (Conf: {longest[1]:.2f})"
+        attributes['tag_name'] = longest[0]  # OCR-scanned tag name
     else:
         attributes['from_ocr'] = ''
-    attributes['pole_id'] = best_id
-
-    # Manual pole_id overrides for specific images
-    img_file = os.path.basename(image_path).lower()
-    manual_ids = {
-        'poletag_5': '625296',
-        'poletag_12': '5925',
-        'poletag_14': 'PD41459',
-        'poletag_15': 'PD41459',
-        'poletag_16': '735033',
-
-    }
-    for key, val in manual_ids.items():
-        if key in img_file:
-            attributes['pole_id'] = val
-            break
+        attributes['tag_name'] = ''
 
     # YOLO class mapping (example, you should update with your custom model/classes)
     class_map = yolo_model.names if hasattr(yolo_model, 'names') else {}
@@ -92,27 +97,32 @@ def detect_infrastructure_attributes(image_path, yolo_model_path='yolov8s.pt'):
 
 def write_gis_csv(attributes, output_csv):
     """
-    Writes the detected attributes to a new CSV file in GIS format.
+    Writes the detected attributes to a CSV file in GIS format.
+    Updates existing entry if pole_id already exists, otherwise appends new entry.
     """
+    import pandas as pd
     fieldnames = [
-        'pole_id', 'pole_type', 'vegetation_encroachment', 'from_ocr'
+        'pole_id','tag_name', 'pole_type', 'vegetation_encroachment', 'from_ocr'
     ]
-    file_exists = os.path.isfile(output_csv)
-    with open(output_csv, 'a', newline='') as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        if not file_exists:
-            writer.writeheader()
+    
+    pole_id = attributes.get('pole_id')
+    
+    # Read existing CSV if it exists
+    if os.path.isfile(output_csv):
+        df = pd.read_csv(output_csv)
+        # Update existing entry or append new one
+        if pole_id and pole_id in df['pole_id'].values:
+            for field in fieldnames:
+                if field in attributes:
+                    df.loc[df['pole_id'] == pole_id, field] = attributes[field]
+        else:
+            row = {k: attributes.get(k, '') for k in fieldnames}
+            new_row = pd.DataFrame([row])
+            df = pd.concat([df, new_row], ignore_index=True)
+        df.to_csv(output_csv, index=False)
+    else:
+        # Create new CSV
         row = {k: attributes.get(k, '') for k in fieldnames}
-        writer.writerow(row)
+        df = pd.DataFrame([row])
+        df.to_csv(output_csv, index=False)
 
-def run_full_pipeline(image_path, output_csv, yolo_model_path='yolov8s.pt'):
-    """
-    Runs both the detailed GIS detection and a full-frame OCR reader, outputs both to CSV.
-    """
-    # GIS detection (YOLO+EasyOCR on regions)
-    attributes = detect_infrastructure_attributes(image_path, yolo_model_path)
-    write_gis_csv(attributes, output_csv)
-
-# Example usage:
-# attrs = detect_infrastructure_attributes('src/processed/PoleTag_25_processed.jpg')
-# write_gis_csv(attrs, 'output_gis.csv')

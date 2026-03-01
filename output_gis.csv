@@ -1,14 +1,14 @@
-pole_id,pole_type,vegetation_encroachment,from_ocr
-735033,wood,False,
-735033,wood,False,
-735033,wood,False,
-735033,wood,False,
-6-5737,wood,False,6-5737 (Conf: 0.66)
-625296,wood,False,
-,wood,False,
-625296,wood,False,625296 (Conf: 0.80)
-,wood,False,
-,wood,False,
-0444194,wood,False,0444194 (Conf: 0.53)
-,wood,False,
-,wood,False,
+pole_id,tag_name,pole_type,vegetation_encroachment,from_ocr
+tmpbcte9u9__processed,444194.0,wood,False,444194 (Conf: 0.81)
+tmpcbfxw148_processed,,wood,False,
+tmpimdlkrru_processed,625296.0,wood,False,625296 (Conf: 0.82)
+tmpvqr_3zsp_processed,544344.0,wood,False,544344 (Conf: 0.52)
+tmpvy5_zu9n_processed,,wood,False,
+tmppvhwrgss_processed,,wood,False,
+tmpn2iuwe5v_processed,,wood,False,
+tmpdheuubts_processed,,wood,False,
+tmp724owp_q_processed,,wood,False,
+tmp7jvz7__0_processed,,wood,False,
+tmpdzwyv_av_processed,,wood,False,
+tmpw01adfdc_processed,,wood,False,
+PoleTag_3,,wood,False,
