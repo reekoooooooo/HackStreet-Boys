@@ -1,8 +1,0 @@
-opencv-python
-easyocr
-numpy
-ultralytics
-streamlit
-pandas
-pillow
-inference-sdk

@@ -1,0 +1,24 @@
+# PolePad AI - Utility Pole Inspection System
+# Core dependencies for running the application
+
+# Web UI Framework
+streamlit>=1.28.0
+
+# Data processing and CSV operations
+pandas>=2.0.0
+
+# Image processing and computer vision
+opencv-python>=4.8.0
+Pillow>=10.0.0
+
+# Numerical computations
+numpy>=1.24.0
+
+# Object detection (YOLO)
+ultralytics>=8.0.0
+
+# Optical Character Recognition (OCR)
+easyocr>=1.6.0
+
+# Roboflow API for cloud-based detection (optional)
+inference-sdk>=0.13.0
