@@ -4,37 +4,78 @@
 
 ## Initial Plan:
 
-### ML(1-2 members): Use **Open CV** with Python because we have prior experience with it,
 
-and because we can pre process images before OCR for increased accuracy.
+# PolePad AI: Crowd-Powered Infrastructure Verification
 
-#### -OCR:
+## Team: The HackStreet Boys
+**Members:** David Ringler, Tyreek Long, Pranav Kanumuri, Raymart Velesco, Alex Santiago
 
-1. Finding Serial Number using text detection and extraction.
-2. Finding Vegetation growth, guy guards, conduit risers using object detection.
-3. Gather Test Images
+---
 
-### Data/Logic(1-2 members): Creating a mock GIS Database, comparison logic, and the risk scoring engine.
+## Project Overview
+PolePad AI is an AI-powered system for analyzing utility pole inspection images and turning them into structured, verifiable infrastructure data. It supports both automated detection and human-in-the-loop validation, enabling distributed, crowd-powered asset verification for utilities like Dominion Energy.
 
-#### -GIS Mock DataBase:
+---
 
-1. Create a csv file with fake/prior entries
-2. Seed a mock GIS Database
+## Features
+- **Two Pipeline Modes:**
+	- **Tag Extraction (OCR):** For close-up images of pole tags, numbers, or asset labels. Extracts alphanumeric IDs and attributes.
+	- **Scene Detection (Roboflow):** For wide shots of poles, wires, and vegetation. Detects infrastructure elements and computes vegetation risk.
+- **Streamlit Web UI:** Simple interface for uploading images and choosing analysis mode.
+- **Confidence & Review Columns:** All outputs include confidence scores, review-needed flags, and consensus tracking for human validation.
+- **CSV & Visualization Outputs:** Results are saved as CSVs for easy integration, and annotated images are saved for review.
 
-#### -Risk Scoring Algorithm
+---
 
-#### -Comparison Logic
+## How to Run
 
-### Frontend(1 member): Create a UI to display results and connect with backend.
+### 1. Command Line
+- **Tag Extraction (OCR):**
+	```
+	python src/run_all_pipeline.py path/to/image.jpg
+	```
+- **Scene Detection (Roboflow):**
+	```
+	python src/run_all_pipeline.py path/to/image.jpg --roboflow
+	```
 
-#### -UI Using StremLit(may be changed):
+### 2. Streamlit Web App
+```
+streamlit run app_streamlit.py
+```
+Upload an image and select the mode in the browser.
 
-#### - Connect to backend mock database
+---
 
-### Presentation(everybody): Create a simple, clean, and effective presentation.\
+## Outputs
+- **CSV Files:**
+	- `output_gis.csv` (for OCR/tag mode): Includes pole_id, type, vegetation, confidence, review_needed, validated, consensus.
+	- `roboflow_output/roboflow_results.csv` (for Roboflow mode): Includes image, wire_count, vegetation_score.
+- **Visualization Images:**
+	- Annotated images saved in `roboflow_visualizations/`.
 
-#### -Presentation:
+---
 
-1. make slides.
-2. potential Q&A questions to prepare for.
-3. review and mock present.
+## Tech Stack
+- **Python** (core language)
+- **OpenCV** (image preprocessing)
+- **EasyOCR** (text/number extraction)
+- **YOLOv8** (object detection)
+- **Roboflow Inference SDK** (cloud model integration)
+- **Streamlit** (web UI)
+- **CSV** (structured outputs)
+
+---
+
+## Value Proposition
+- **Reduces manual data entry and errors**
+- **Accelerates field audits and asset verification**
+- **Enables distributed, crowd-powered validation**
+- **Creates a living, continuously updated asset registry**
+- **Supports both AI automation and human expertise**
+
+---
+
+## For Presentations
+- See `docs/pipeline_modes_summary.md` for a ready-to-use summary.
+- Example Q&A and tech stack breakdown included in project documentation.
