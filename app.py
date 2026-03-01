@@ -5,6 +5,8 @@ from PIL import Image
 import os
 import json
 import datetime
+import tempfile
+import subprocess
 
 import os
 print(f"Current working directory: {os.getcwd()}")
@@ -66,22 +68,40 @@ with col1:
     st.header("New Inspection")
     st.markdown("Upload a pole image or select a pole ID → review details & compare with GIS.")
     
-    uploaded = st.file_uploader("Upload an inspection image (optional)", type=["jpg", "jpeg", "png"])
-    
-    st.write("**Or select a pole to review:**")
-    pole_list = list(gis_df["pole_id"].values)
-    selected_pole = st.selectbox("Select pole_id", options=[""] + pole_list, index=0, key="section1")
-    
-    if selected_pole:
-        if st.button("Review this pole", key="btn_section1"):
-            navigate_to_pole(selected_pole)
-    
-    if uploaded:
-        st.image(Image.open(uploaded).convert("RGB"), caption="Uploaded image", use_column_width=True)
-        if st.button("Go to review", key="btn_upload"):
-            navigate_to_pole(selected_pole)
-    else:
-        st.info("Select a pole from the left section first.")
+    mode = st.radio(
+    "Choose analysis mode:",
+    [
+        "Tag Extraction (OCR, close-up tags/numbers)",
+        "Scene Detection (Poles, Wires, Vegetation, etc. - Roboflow)"
+    ]
+    )
+
+
+    uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png", "webp"])
+
+
+    if uploaded_file is not None:
+        img = Image.open(uploaded_file)
+        st.image(img, caption="Uploaded Image", use_column_width=True)
+        # Save to a temp file
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp:
+            img.save(tmp.name)
+            temp_path = tmp.name
+
+
+        if st.button("Analyze"):
+            if "Tag Extraction" in mode:
+                cmd = f"python src/run_all_pipeline.py {temp_path}"
+            else:
+                cmd = f"python src/run_all_pipeline.py {temp_path} --roboflow"
+            st.write(f"Running: `{cmd}`")
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+            st.text(result.stdout)
+            if result.stderr:
+                st.error(result.stderr)
+
+        
+        
 
 # ===== SECTION 2: REVIEW FLAGGED POLES =====
 with col2:
